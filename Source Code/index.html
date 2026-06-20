@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A premium Simple and Compound Interest Calculator with interactive charts, real-time adjustments, and detailed yearly growth schedule.">
+    <title>Premium Interest Calculator | Simple & Compound</title>
+    
+    <!-- Google Fonts: Plus Jakarta Sans for premium typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Chart.js for data visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        /* Design System & CSS Variables */
+        :root {
+            --bg-dark: #07080e;
+            --bg-panel: rgba(22, 24, 40, 0.65);
+            --bg-card: rgba(30, 32, 54, 0.45);
+            --border-glow: rgba(99, 102, 241, 0.15);
+            --border-glass: rgba(255, 255, 255, 0.08);
+            
+            /* Gradient Accent Colors */
+            --gradient-primary: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); /* Purple/Indigo */
+            --gradient-secondary: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%); /* Cyan/Blue */
+            --gradient-accent: linear-gradient(135deg, #10b981 0%, #059669 100%); /* Green */
+            
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            
+            --cyan: #06b6d4;
+            --purple: #a855f7;
+            --emerald: #10b981;
+            
+            --transition-speed: 0.3s;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background: radial-gradient(circle at 50% 0%, #1e1b4b 0%, var(--bg-dark) 70%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            overflow-x: hidden;
+            width: 100%;
+        }
+
+        /* Container Layout */
+        .app-container {
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        /* Header Styles */
+        header {
+            text-align: center;
+            padding: 20px 0 10px 0;
+        }
+
+        header h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            background: linear-gradient(to right, #f43f5e, #a855f7, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        header p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            font-weight: 400;
+        }
+
+        /* Main Dashboard Grid */
+        main {
+            display: grid;
+            grid-template-columns: 1.1fr 1.9fr;
+            gap: 24px;
+        }
+
+        @media (max-width: 1024px) {
+            main {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Glassmorphic Panel Base styling */
+        .glass-panel {
+            background: var(--bg-panel);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-glass);
+            border-radius: 24px;
+            box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.5), inset 0 0 0 1px var(--border-glow);
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            transition: all var(--transition-speed) ease;
+        }
+
+        /* Segmented Tabs Control */
+        .tabs-container {
+            display: flex;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 6px;
+            border-radius: 16px;
+            border: 1px solid var(--border-glass);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            background: transparent;
+            border: none;
+            border-radius: 12px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .tab-btn.active {
+            background: var(--gradient-primary);
+            color: var(--text-primary);
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+        }
+
+        /* Input Controls */
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .input-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .input-header label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-wrapper input[type="number"] {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-glass);
+            border-radius: 12px;
+            padding: 12px 16px;
+            color: var(--text-primary);
+            font-size: 1.1rem;
+            font-weight: 600;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .input-wrapper input[type="number"]:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+
+        /* Prefix/Suffix labels inside input */
+        .currency-symbol, .percent-symbol, .years-symbol {
+            position: absolute;
+            right: 16px;
+            color: var(--text-muted);
+            font-weight: 600;
+            pointer-events: none;
+        }
+
+        /* Range Sliders styling */
+        .range-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.1);
+            outline: none;
+            margin-top: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .range-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #a855f7;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(168, 85, 247, 0.8);
+            transition: all 0.1s ease;
+        }
+
+        .range-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        .range-slider::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border: none;
+            border-radius: 50%;
+            background: #a855f7;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(168, 85, 247, 0.8);
+            transition: all 0.1s ease;
+        }
+
+        .range-slider::-moz-range-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        /* Compounding Select control */
+        .compound-select {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-glass);
+            border-radius: 12px;
+            padding: 12px 16px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-weight: 600;
+            outline: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .compound-select:focus {
+            border-color: #6366f1;
+        }
+
+        .compound-select option {
+            background: var(--bg-dark);
+            color: var(--text-primary);
+        }
+
+        /* Results / Charts Column Styles */
+        .results-panel {
+            gap: 28px;
+        }
+
+        /* Key Metrics Cards */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        @media (max-width: 640px) {
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .metric-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-glass);
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            position: relative;
+            overflow: hidden;
+            transition: transform var(--transition-speed) ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(99, 102, 241, 0.3);
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+        }
+
+        .metric-card.principal::before { background: var(--cyan); }
+        .metric-card.interest::before { background: var(--purple); }
+        .metric-card.total::before { background: var(--emerald); }
+
+        .metric-label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .metric-value {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            word-break: break-all;
+        }
+
+        /* Visualization Panel */
+        .viz-container {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .viz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .viz-header h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .viz-switcher {
+            display: flex;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 4px;
+            border-radius: 8px;
+            border: 1px solid var(--border-glass);
+        }
+
+        .viz-switch-btn {
+            background: transparent;
+            border: none;
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .viz-switch-btn.active {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+        }
+
+        /* Chart Canvas Wrappers */
+        .chart-wrapper {
+            position: relative;
+            height: 300px;
+            width: 100%;
+            background: var(--bg-card);
+            border: 1px solid var(--border-glass);
+            border-radius: 16px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .chart-view {
+            width: 100%;
+            height: 100%;
+            display: none;
+        }
+
+        .chart-view.active {
+            display: block;
+        }
+
+        /* Currency Selector Style */
+        .settings-bar {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .currency-select {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-glass);
+            border-radius: 8px;
+            padding: 6px 12px;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            font-weight: 600;
+            outline: none;
+            cursor: pointer;
+        }
+
+        /* Amortization Growth Table */
+        .table-section {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .table-section h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .table-wrapper {
+            max-height: 250px;
+            overflow-y: auto;
+            overflow-x: auto;
+            border: 1px solid var(--border-glass);
+            border-radius: 16px;
+            background: var(--bg-card);
+        }
+
+        /* Scrollbar styles for the table wrapper */
+        .table-wrapper::-webkit-scrollbar {
+            width: 6px;
+        }
+        .table-wrapper::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .table-wrapper::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+
+        thead {
+            position: sticky;
+            top: 0;
+            background: #191b2e;
+            box-shadow: 0 1px 0 rgba(255, 255, 255, 0.1);
+            z-index: 1;
+        }
+
+        th {
+            padding: 12px 16px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            padding: 12px 16px;
+            color: var(--text-primary);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            font-weight: 500;
+        }
+
+        tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        /* Footer styling */
+        footer {
+            margin-top: auto;
+            padding: 40px 0 20px 0;
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        footer a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        footer a:hover {
+            color: #6366f1;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="app-container">
+        <header>
+            <h1 id="appTitle">💰 Interest Calculator</h1>
+            <p>Interactive Simple & Compound Interest Analysis Platform</p>
+        </header>
+
+        <!-- Configuration Settings (Currency) -->
+        <div class="settings-bar">
+            <label for="currencySelect" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600;">Currency:</label>
+            <select id="currencySelect" class="currency-select" onchange="updateCalculations()">
+                <option value="₹">₹ (INR)</option>
+                <option value="$">$ (USD)</option>
+                <option value="€">€ (EUR)</option>
+                <option value="£">£ (GBP)</option>
+            </select>
+        </div>
+
+        <main>
+            <!-- Left Column: Parameters and Sliders -->
+            <section class="glass-panel">
+                <div class="tabs-container">
+                    <button id="simpleTab" class="tab-btn active" onclick="setMode('simple')">Simple Interest</button>
+                    <button id="compoundTab" class="tab-btn" onclick="setMode('compound')">Compound Interest</button>
+                </div>
+
+                <!-- Principal Input -->
+                <div class="input-group">
+                    <div class="input-header">
+                        <label for="principalInput">Principal Amount</label>
+                    </div>
+                    <div class="input-wrapper">
+                        <input type="number" id="principalInput" min="1000" max="10000000" step="1000" value="100000" oninput="syncInputs('principal')">
+                        <span id="principalCurrency" class="currency-symbol">₹</span>
+                    </div>
+                    <input type="range" id="principalRange" class="range-slider" min="1000" max="10000000" step="5000" value="100000" oninput="syncInputs('principal')">
+                </div>
+
+                <!-- Interest Rate Input -->
+                <div class="input-group">
+                    <div class="input-header">
+                        <label for="rateInput">Interest Rate (Annual)</label>
+                    </div>
+                    <div class="input-wrapper">
+                        <input type="number" id="rateInput" min="1" max="30" step="0.1" value="8.5" oninput="syncInputs('rate')">
+                        <span class="percent-symbol">%</span>
+                    </div>
+                    <input type="range" id="rateRange" class="range-slider" min="1" max="30" step="0.1" value="8.5" oninput="syncInputs('rate')">
+                </div>
+
+                <!-- Time Period Input -->
+                <div class="input-group">
+                    <div class="input-header">
+                        <label for="timeInput">Time Period</label>
+                    </div>
+                    <div class="input-wrapper">
+                        <input type="number" id="timeInput" min="1" max="40" step="1" value="10" oninput="syncInputs('time')">
+                        <span class="years-symbol">Yr</span>
+                    </div>
+                    <input type="range" id="timeRange" class="range-slider" min="1" max="40" step="1" value="10" oninput="syncInputs('time')">
+                </div>
+
+                <!-- Compound Frequency Selector (Dynamic Visibility) -->
+                <div class="input-group" id="frequencyGroup" style="display: none;">
+                    <label for="frequencySelect">Compounding Frequency</label>
+                    <select id="frequencySelect" class="compound-select" onchange="updateCalculations()">
+                        <option value="1">Annually</option>
+                        <option value="2">Semi-Annually</option>
+                        <option value="4">Quarterly</option>
+                        <option value="12" selected>Monthly</option>
+                        <option value="365">Daily</option>
+                    </select>
+                </div>
+            </section>
+
+            <!-- Right Column: Interactive Results Dashboard -->
+            <section class="glass-panel results-panel">
+                <!-- Key Stat Metrics Cards -->
+                <div class="metrics-grid">
+                    <div class="metric-card principal">
+                        <span class="metric-label">Principal Amount</span>
+                        <span class="metric-value" id="statPrincipal">₹100,000.00</span>
+                    </div>
+                    <div class="metric-card interest">
+                        <span class="metric-label" id="statInterestLabel">Simple Interest</span>
+                        <span class="metric-value" id="statInterest">₹85,000.00</span>
+                    </div>
+                    <div class="metric-card total">
+                        <span class="metric-label">Maturity Value</span>
+                        <span class="metric-value" id="statTotal">₹185,000.00</span>
+                    </div>
+                </div>
+
+                <!-- Visual Charts Panel -->
+                <div class="viz-container">
+                    <div class="viz-header">
+                        <h3>Visual Analytics</h3>
+                        <div class="viz-switcher">
+                            <button id="growthChartBtn" class="viz-switch-btn active" onclick="switchChart('growth')">Growth Curve</button>
+                            <button id="breakdownChartBtn" class="viz-switch-btn" onclick="switchChart('breakdown')">Breakdown</button>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-wrapper">
+                        <div id="growthChartWrapper" class="chart-view active">
+                            <canvas id="growthChart"></canvas>
+                        </div>
+                        <div id="breakdownChartWrapper" class="chart-view">
+                            <canvas id="breakdownChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Yearly Breakdown Table Section -->
+                <div class="table-section">
+                    <h3>Yearly Investment Breakdown</h3>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Year</th>
+                                    <th>Starting Balance</th>
+                                    <th>Interest Earned</th>
+                                    <th>Ending Balance</th>
+                                </tr>
+                            </thead>
+                            <tbody id="breakdownTableBody">
+                                <!-- Dynamic Rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>Simple & Compound Interest Calculator</p>
+            <p>© 2026 Chiranjeeb</p>
+        </footer>
+    </div>
+
+    <!-- JavaScript logic -->
+    <script>
+        let mode = 'simple'; // 'simple' or 'compound'
+        let growthChartInstance = null;
+        let breakdownChartInstance = null;
+
+        // On Load, execute calculation
+        window.addEventListener('DOMContentLoaded', () => {
+            initCharts();
+            updateCalculations();
+        });
+
+        // Toggle between Simple and Compound Interest tabs
+        function setMode(newMode) {
+            mode = newMode;
+            
+            // Toggle active classes on tab buttons
+            document.getElementById('simpleTab').classList.toggle('active', mode === 'simple');
+            document.getElementById('compoundTab').classList.toggle('active', mode === 'compound');
+            
+            // Toggle visibility of Compounding Frequency group
+            const freqGroup = document.getElementById('frequencyGroup');
+            freqGroup.style.display = mode === 'compound' ? 'flex' : 'none';
+
+            // Change interest label text on the stats card
+            const interestLabel = document.getElementById('statInterestLabel');
+            interestLabel.innerText = mode === 'simple' ? 'Simple Interest' : 'Compound Interest';
+
+            updateCalculations();
+        }
+
+        // Switch between Growth Curve Line Chart and Breakdown Doughnut Chart
+        function switchChart(chartType) {
+            document.getElementById('growthChartBtn').classList.toggle('active', chartType === 'growth');
+            document.getElementById('breakdownChartBtn').classList.toggle('active', chartType === 'breakdown');
+
+            document.getElementById('growthChartWrapper').classList.toggle('active', chartType === 'growth');
+            document.getElementById('breakdownChartWrapper').classList.toggle('active', chartType === 'breakdown');
+        }
+
+        // Sync values between Range Sliders and Text Input Boxes
+        function syncInputs(id) {
+            const inputField = document.getElementById(`${id}Input`);
+            const rangeSlider = document.getElementById(`${id}Range`);
+
+            if (event.target.type === 'range') {
+                inputField.value = rangeSlider.value;
+            } else {
+                // Keep input within boundaries if text field is changed
+                let val = parseFloat(inputField.value) || 0;
+                const min = parseFloat(inputField.min);
+                const max = parseFloat(inputField.max);
+                
+                if (val < min) val = min;
+                if (val > max) val = max;
+                
+                rangeSlider.value = val;
+            }
+
+            updateCalculations();
+        }
+
+        // Currency Formatting utility
+        function formatCurrency(amount, symbol) {
+            const formatter = new Intl.NumberFormat('en-IN', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+            return `${symbol}${formatter.format(amount)}`;
+        }
+
+        // Main calculations and chart update triggers
+        function updateCalculations() {
+            // Retrieve parameters
+            const P = parseFloat(document.getElementById('principalInput').value) || 0;
+            const R = parseFloat(document.getElementById('rateInput').value) || 0;
+            const T = parseInt(document.getElementById('timeInput').value) || 1;
+            const symbol = document.getElementById('currencySelect').value;
+
+            // Sync all currency display symbols
+            document.getElementById('principalCurrency').innerText = symbol;
+
+            let interest = 0;
+            let totalAmount = P;
+            const tableRows = [];
+            const labels = ['Year 0'];
+            const principalGrowthData = [P];
+            const totalGrowthData = [P];
+
+            if (mode === 'simple') {
+                // Simple Interest calculation year-by-year
+                const yearlyInterestEarned = P * (R / 100);
+                interest = yearlyInterestEarned * T;
+                totalAmount = P + interest;
+
+                let currentBalance = P;
+                for (let year = 1; year <= T; year++) {
+                    const startBal = currentBalance;
+                    currentBalance += yearlyInterestEarned;
+                    
+                    tableRows.push({
+                        year: year,
+                        start: startBal,
+                        interest: yearlyInterestEarned,
+                        end: currentBalance
+                    });
+
+                    labels.push(`Year ${year}`);
+                    principalGrowthData.push(P);
+                    totalGrowthData.push(currentBalance);
+                }
+            } else {
+                // Compound Interest calculation year-by-year
+                const n = parseInt(document.getElementById('frequencySelect').value) || 12;
+                
+                let currentBalance = P;
+                for (let year = 1; year <= T; year++) {
+                    const startBal = currentBalance;
+                    // A = P * (1 + R/(100*n))^(n*t)
+                    const endBal = P * Math.pow((1 + (R / 100) / n), n * year);
+                    const yearlyInterestEarned = endBal - startBal;
+                    
+                    currentBalance = endBal;
+
+                    tableRows.push({
+                        year: year,
+                        start: startBal,
+                        interest: yearlyInterestEarned,
+                        end: currentBalance
+                    });
+
+                    labels.push(`Year ${year}`);
+                    principalGrowthData.push(P);
+                    totalGrowthData.push(currentBalance);
+                }
+                
+                totalAmount = currentBalance;
+                interest = totalAmount - P;
+            }
+
+            // Update stats cards
+            document.getElementById('statPrincipal').innerText = formatCurrency(P, symbol);
+            document.getElementById('statInterest').innerText = formatCurrency(interest, symbol);
+            document.getElementById('statTotal').innerText = formatCurrency(totalAmount, symbol);
+
+            // Update yearly growth schedule table
+            const tableBody = document.getElementById('breakdownTableBody');
+            tableBody.innerHTML = '';
+            
+            tableRows.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${row.year}</td>
+                    <td>${formatCurrency(row.start, symbol)}</td>
+                    <td style="color: var(--purple); font-weight: 600;">${formatCurrency(row.interest, symbol)}</td>
+                    <td style="color: var(--emerald); font-weight: 600;">${formatCurrency(row.end, symbol)}</td>
+                `;
+                tableBody.appendChild(tr);
+            });
+
+            // Update visual charts
+            updateCharts(labels, principalGrowthData, totalGrowthData, P, interest);
+        }
+
+        // Initialize empty ChartJS structures
+        function initCharts() {
+            // Growth Line Chart Config
+            const ctxGrowth = document.getElementById('growthChart').getContext('2d');
+            growthChartInstance = new Chart(ctxGrowth, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: 'Total Value',
+                            data: [],
+                            borderColor: '#a855f7',
+                            backgroundColor: 'rgba(168, 85, 247, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.3,
+                            pointRadius: 4,
+                            pointHoverRadius: 7
+                        },
+                        {
+                            label: 'Principal Investment',
+                            data: [],
+                            borderColor: '#06b6d4',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            fill: false,
+                            pointRadius: 0
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#f8fafc',
+                                font: { family: 'Plus Jakarta Sans', weight: '600' }
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: 'rgba(15, 17, 30, 0.95)',
+                            titleFont: { family: 'Plus Jakarta Sans', size: 13, weight: '700' },
+                            bodyFont: { family: 'Plus Jakarta Sans', size: 12 },
+                            borderWidth: 1,
+                            borderColor: 'rgba(255, 255, 255, 0.1)'
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: 'rgba(255, 255, 255, 0.03)' },
+                            ticks: { color: '#94a3b8', font: { family: 'Plus Jakarta Sans' } }
+                        },
+                        y: {
+                            grid: { color: 'rgba(255, 255, 255, 0.03)' },
+                            ticks: { 
+                                color: '#94a3b8',
+                                font: { family: 'Plus Jakarta Sans' },
+                                callback: function(value) {
+                                    const symbol = document.getElementById('currencySelect').value;
+                                    if (value >= 10000000) return symbol + (value / 10000000).toFixed(1) + ' Cr';
+                                    if (value >= 100000) return symbol + (value / 100000).toFixed(1) + ' L';
+                                    if (value >= 1000) return symbol + (value / 1000).toFixed(0) + ' K';
+                                    return symbol + value;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Breakdown Doughnut Chart Config
+            const ctxBreakdown = document.getElementById('breakdownChart').getContext('2d');
+            breakdownChartInstance = new Chart(ctxBreakdown, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Principal Investment', 'Interest Earned'],
+                    datasets: [{
+                        data: [0, 0],
+                        backgroundColor: ['#06b6d4', '#a855f7'],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#f8fafc',
+                                font: { family: 'Plus Jakarta Sans', weight: '600' }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 17, 30, 0.95)',
+                            bodyFont: { family: 'Plus Jakarta Sans', size: 13, weight: '600' },
+                            callbacks: {
+                                label: function(context) {
+                                    const value = context.raw;
+                                    const symbol = document.getElementById('currencySelect').value;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    
+                                    const formatter = new Intl.NumberFormat('en-IN', {
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2
+                                    });
+                                    return ` ${context.label}: ${symbol}${formatter.format(value)} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    },
+                    cutout: '65%'
+                }
+            });
+        }
+
+        // Dynamically update data arrays on charts
+        function updateCharts(labels, principalGrowth, totalGrowth, principal, interest) {
+            if (growthChartInstance) {
+                growthChartInstance.data.labels = labels;
+                growthChartInstance.data.datasets[0].data = totalGrowth;
+                growthChartInstance.data.datasets[1].data = principalGrowth;
+                growthChartInstance.update();
+            }
+
+            if (breakdownChartInstance) {
+                breakdownChartInstance.data.datasets[0].data = [principal, interest];
+                breakdownChartInstance.update();
+            }
+        }
+    </script>
+</body>
+
+</html>

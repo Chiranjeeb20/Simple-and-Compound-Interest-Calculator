@@ -1,0 +1,24 @@
+# Simple and Compound Interest Calculator
+
+# Set default behavior to automatically normalize line endings
+* text=auto
+
+# Ensure text and source files use LF on checkout
+*.md text eol=lf
+*.sh text eol=lf
+*.txt text eol=lf
+*.cff text eol=lf
+*.json text eol=lf
+.gitattributes text eol=lf
+.gitignore text eol=lf
+LICENSE text eol=lf
+
+# Explicitly mark binary files
+*.pdf binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+
+# Improve diff handling
+*.md text diff=markdown
+*.html linguist-detectable=false
